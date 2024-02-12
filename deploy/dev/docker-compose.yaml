@@ -1,0 +1,40 @@
+version: "3.8"
+
+networks:
+  default:
+    external: false
+
+volumes:
+  pgdata:
+    driver: local
+
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: ./deploy/dev/Dockerfile
+    volumes:
+      - ./logs:/var/log/bookshop/
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+#        condition: service_healthy
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./pg_hba.conf:/docker-entrypoint-initdb.d/pg_hba.conf
+      - ./cp_pg_hba.sh:/docker-entrypoint-initdb.d/cp_pg_hba.sh
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
+#      interval: 10s
+#      timeout: 10s
+#      retries: 120
+    expose:
+      - "5432"
