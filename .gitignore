@@ -5,3 +5,5 @@ poetry.lock
 **/logs/
 
 **/.env
+
+config.json

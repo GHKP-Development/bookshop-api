@@ -1,19 +1,16 @@
 from time import sleep
 
-from src.db.config import DBConfig, DBEngineType
+from config import Config
 from src.db.connection import Database
+from src.utils.logging.logger import Logger
 
 
 def main():
-    Database(DBConfig(
-        db_name="bookshop",
-        engine=DBEngineType.POSTGRESQL,
-        host="postgres",
-        port=5432,
-        username="postgres",
-        password="1234"
-    ))
-    print("Initialized")
+    cfg = Config.from_file()
+    logger = Logger("MAIN", cfg.log_level)
+    logger.info("Initializing database...")
+    Database(cfg.database, logger.clone("DB"))
+    logger.info("Database initialized.")
     sleep(120)
 
 

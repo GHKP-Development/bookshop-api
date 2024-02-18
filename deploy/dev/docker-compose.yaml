@@ -13,12 +13,19 @@ services:
     build:
       context: ../..
       dockerfile: ./deploy/dev/Dockerfile
+    environment:
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_HOST=postgres
     volumes:
       - ./logs:/var/log/bookshop/
     ports:
       - "8080:80"
     depends_on:
       - postgres
+# TODO: review healthcheck
 #        condition: service_healthy
 
   postgres:
