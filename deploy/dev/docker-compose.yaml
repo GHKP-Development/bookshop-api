@@ -43,5 +43,5 @@ services:
 #      interval: 10s
 #      timeout: 10s
 #      retries: 120
-    expose:
-      - "5432"
+    ports:
+      - "5433:5432"

@@ -11,7 +11,7 @@ def main():
     logger.info("Initializing database...")
     Database(cfg.database, logger.clone("DB"))
     logger.info("Database initialized.")
-    sleep(120)
+    sleep(1120)
 
 
 if __name__ == "__main__":

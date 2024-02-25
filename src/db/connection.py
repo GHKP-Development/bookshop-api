@@ -1,7 +1,11 @@
+from decimal import Decimal
+
 from sqlalchemy import Engine, create_engine, text
 
 from config import DBConfig, DBEngineType
+from src.core.category import ProductCategory
 from src.utils.logging.logger import Logger
+from src.db.models import Base, ProductModel
 
 
 class Database:
@@ -10,6 +14,7 @@ class Database:
         self._cfg: DBConfig = cfg
         self._logger: Logger = logger
         self._db: Engine = self._create_engine()
+        self.create_tables()
 
     def _create_engine(self) -> Engine:
         if self._cfg.engine == DBEngineType.POSTGRESQL:
@@ -31,3 +36,23 @@ class Database:
             else:
                 self._logger.debug(f"Database {self._cfg.db_name} already exists")
             conn.execute(text('commit'))
+
+    def create_tables(self):
+        Base.metadata.create_all(self._db)
+        self._logger.debug("Tables created")
+
+    def get_product(self, product_id: int) -> ProductModel:
+        raise NotImplementedError
+
+    def search_products(self, name: str, category: ProductCategory, min_price: Decimal, max_price: Decimal, producer: str) -> list[ProductModel]:
+        raise NotImplementedError
+
+    def insert_product(self, product: ProductModel):
+        raise NotImplementedError
+
+    def delete_product(self, product_id: int):
+        raise NotImplementedError
+
+    def update_product(self, product: ProductModel):
+        raise NotImplementedError
+
