@@ -22,7 +22,7 @@ class Product:
         return ProductModel(
             id=self.id,
             name=self.name,
-            category=self.category.value,
+            category=self.category,
             price=self.price,
             description=self.description,
             image_path=self.image_path,
@@ -36,7 +36,7 @@ class Product:
         return cls(
             id=db_model.id,
             name=db_model.name,
-            category=ProductCategory(db_model.category),
+            category=db_model.category,
             price=db_model.price,
             description=db_model.description,
             image_path=db_model.image_path,

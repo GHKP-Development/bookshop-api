@@ -32,6 +32,7 @@ class Session:
     def insert_product(self, product: ProductModel):
         product_id = self._insert(product)
         self._logger.debug(f"Product {product.name} inserted with id {product_id}")
+        return product_id
 
     def delete_product(self, product_id: int):
         if product := self._session.query(ProductModel).filter_by(id=product_id).first():

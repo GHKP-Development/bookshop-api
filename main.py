@@ -13,7 +13,7 @@ def main():
     logger.info("Initializing database...")
     db = Database(cfg.database, logger.clone("DB"))
     product = Product(name="proba",
-                      category=ProductCategory.ARTS,
+                      category=ProductCategory.ARTS.value,
                       price=1,
                       description="",
                       image_path="",
@@ -25,15 +25,14 @@ def main():
     else:
         logger.info(f"Product inserted with id: {product.id}")
 
-    get_product = db.get_product(product_id=14)
-    logger.info(f"Product extracted: {get_product}")
+    extracted_product = db.get_product(product_id=product.id)
+    logger.info(f"Product extracted: {extracted_product}")
 
-    product.name = "proba2"
-    if not db.update_product(product):
+    extracted_product.name = "proba4"
+    if not db.update_product(extracted_product):
         logger.error("Could not update product in main")
     else:
-        logger.info(f"Updated {product}")
-    sleep(1120)
+        logger.info(f"Updated {extracted_product}")
 
 
 if __name__ == "__main__":

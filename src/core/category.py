@@ -12,3 +12,6 @@ class ProductCategory(Enum):
     NOTEBOOKS: const(int) = 32
     ARTS: const(int) = 64
     TOYS: const(int) = 128
+
+    def __str__(self):
+        return str(self.value)
