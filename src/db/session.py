@@ -1,9 +1,11 @@
+from decimal import Decimal
+from typing import Any
+
 from sqlalchemy.orm import Session as SQLAlchemySession
 
 from src.core.product import Product
 from src.utils.logging.logger import Logger
 from src.db.models import Base, ProductModel
-from src.utils.types import nullable
 
 
 class Session:
@@ -24,8 +26,16 @@ class Session:
     def get_product(self, product_id: int) -> ProductModel | None:
         return self._session.query(ProductModel).filter_by(id=product_id).first()
 
-    def search_products(self, **filters):
-        query = self._session.query(ProductModel).filter_by(**filters)
+    def search_products(self, static_filters: dict[str, Any], category: int = None, min_price: Decimal = None,
+                        max_price: Decimal = None
+                        ):
+        query = self._session.query(ProductModel).filter_by(**static_filters)
+        if min_price is not None:
+            query = query.filter(ProductModel.price >= min_price)
+        if max_price is not None:
+            query = query.filter(ProductModel.price <= max_price)
+        if category is not None:
+            query = query.filter(ProductModel.category.op('&')(category) == category)
         products = query.all()
         return products
 
@@ -34,10 +44,12 @@ class Session:
         self._logger.debug(f"Product {product.name} inserted with id {product_id}")
         return product_id
 
-    def delete_product(self, product_id: int):
+    def delete_product(self, product_id: int) -> bool:
         if product := self._session.query(ProductModel).filter_by(id=product_id).first():
             self._session.delete(product)
             self._session.commit()
+            return True
+        return False
 
     def update_product(self, existing_product: ProductModel, product: Product) -> bool:
         existing_product.name = product.name
@@ -50,4 +62,7 @@ class Session:
         existing_product.quantity = product.quantity
         self._session.commit()
         return True
+
+    def delete_all_products(self):
+        self._session.query(ProductModel).delete()
 

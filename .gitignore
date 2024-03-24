@@ -9,3 +9,5 @@ poetry.lock
 config.json
 
 **/__pycache__/
+
+**/*.db

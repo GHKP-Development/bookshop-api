@@ -1,9 +1,7 @@
-from enum import Enum
-
 from src.utils.types import const
 
 
-class ProductCategory(Enum):
+class ProductCategory:
     STATIONERY: const(int) = 1
     DOCUMENTS: const(int) = 2
     OFFICE: const(int) = 4
@@ -12,6 +10,3 @@ class ProductCategory(Enum):
     NOTEBOOKS: const(int) = 32
     ARTS: const(int) = 64
     TOYS: const(int) = 128
-
-    def __str__(self):
-        return str(self.value)

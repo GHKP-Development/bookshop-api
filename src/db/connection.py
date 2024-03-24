@@ -5,9 +5,8 @@ from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from config import DBConfig, DBEngineType
-from src.core.category import ProductCategory
 from src.core.product import Product
-from src.db.models import Base, ProductModel
+from src.db.models import Base
 from src.utils.logging.logger import Logger
 from src.db.session import Session
 from src.utils.types import nullable
@@ -21,6 +20,10 @@ class Database:
         self._db: Engine = self._create_engine()
         self._session = sessionmaker(bind=self._db)
         self.create_tables()
+
+    @property
+    def name(self) -> str:
+        return self._cfg.db_name
 
     def _create_engine(self) -> Engine:
         if self._cfg.engine == DBEngineType.POSTGRESQL:
@@ -62,7 +65,6 @@ class Database:
         finally:
             raw_session.close()
 
-    # tova e gotovo
     def get_product(self, product_id: int) -> nullable(Product):
         try:
             with self.in_session() as session:
@@ -74,25 +76,21 @@ class Database:
         except Exception as exc:
             self._logger.debug(f"Could not get product with id {product_id}: {exc}")
 
-    def search_products(self, name: str = None, category: ProductCategory = None, min_price: Decimal = None, max_price: Decimal = None,
+    def search_products(self, name: str = None, category: int = None, min_price: Decimal = None,
+                        max_price: Decimal = None,
                         producer: str = None) -> list[Product]:
         try:
             with self.in_session() as session:
-                filters = {}
+                static_filters = {}
 
                 if name is not None:
-                    filters['name'] = name
-                if category is not None:
-                    filters['category'] = category
-                if min_price is not None:
-                    filters['min_price'] = min_price
-                if max_price is not None:
-                    filters['max_price'] = max_price
+                    static_filters['name'] = name
                 if producer is not None:
-                    filters['producer'] = producer
+                    static_filters['producer'] = producer
 
-                return [Product.from_db_model(product) for product in session.search_products(**filters)]
-
+                return [Product.from_db_model(product) for product in
+                        session.search_products(static_filters=static_filters, category=category, min_price=min_price,
+                                                max_price=max_price)]
         except Exception as exc:
             self._logger.error(f"Could not search for products: {exc}")
             raise
@@ -108,14 +106,17 @@ class Database:
             self._logger.error(f"Could not insert product with id {product.id}\n Exception: {exc}")
         return False
 
-    def delete_product(self, product_id: int):
+    def delete_product(self, product_id: int) -> bool:
         try:
             with self.in_session() as session:
-                session.delete_product(product_id)
-                self._logger.debug("Product deleted")
+                if session.delete_product(product_id):
+                    self._logger.debug(f"Product with id {product_id} deleted")
+                    return True
+                self._logger.debug(f"Failed to delete product with id {product_id}")
+                return False
         except Exception as exc:
             self._logger.debug(f"Could not delete product with id {product_id}\n Exception: {exc}")
-            raise
+        return False
 
     def update_product(self, product: Product) -> bool:
         try:
@@ -125,4 +126,13 @@ class Database:
                 self._logger.debug(f"Product with ID: {product.id} does not exist")
         except Exception as exc:
             self._logger.debug(f"Could not update product with id {product.id}\n Exception: {exc}")
+        return False
+
+    def delete_all_products(self):
+        try:
+            with self.in_session() as session:
+                session.delete_all_products()
+                self._logger.debug("All products deleted")
+        except Exception as exc:
+            self._logger.debug(f"Could not delete all products: {exc}")
         return False

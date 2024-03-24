@@ -1,7 +1,6 @@
 import dataclasses
 from typing import Any
 
-from src.core.category import ProductCategory
 from src.db.models import ProductModel
 from src.utils.types import nullable
 
@@ -9,7 +8,7 @@ from src.utils.types import nullable
 @dataclasses.dataclass(repr=True)
 class Product:
     name: str
-    category: ProductCategory
+    category: int
     price: float
     description: str
     image_path: str

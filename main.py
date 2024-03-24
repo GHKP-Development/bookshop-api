@@ -25,14 +25,15 @@ def main():
     else:
         logger.info(f"Product inserted with id: {product.id}")
 
-    extracted_product = db.get_product(product_id=product.id)
-    logger.info(f"Product extracted: {extracted_product}")
-
-    extracted_product.name = "proba4"
-    if not db.update_product(extracted_product):
-        logger.error("Could not update product in main")
-    else:
-        logger.info(f"Updated {extracted_product}")
+    # extracted_product = db.get_product(product_id=product.id)
+    # logger.info(f"Product extracted: {extracted_product}")
+    #
+    # extracted_product.name = "proba4"
+    # if not db.update_product(extracted_product):
+    #     logger.error("Could not update product in main")
+    # else:
+    #     logger.info(f"Updated {extracted_product}")
+    db.delete_product(product_id=99)
 
 
 if __name__ == "__main__":
