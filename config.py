@@ -40,7 +40,7 @@ class DBConfig:
             password=data.get("password", os.getenv("DATABASE_PASSWORD", "NOT_SET")),
             host=data.get("host", os.getenv("DATABASE_HOST", "localhost")),
             port=data.get("port", os.getenv("DATABASE_PORT", -1)),
-            db_name=data.get("name", os.getenv("DATABASE_NAME", "bookshop")),
+            db_name=data.get("db_name", os.getenv("DATABASE_NAME", "bookshop")),
         )
 
 

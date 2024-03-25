@@ -7,3 +7,7 @@ poetry.lock
 **/.env
 
 config.json
+
+**/__pycache__/
+
+**/*.db

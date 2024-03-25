@@ -1,9 +1,7 @@
-from enum import Enum
-
 from src.utils.types import const
 
 
-class ProductCategory(Enum):
+class ProductCategory:
     STATIONERY: const(int) = 1
     DOCUMENTS: const(int) = 2
     OFFICE: const(int) = 4
