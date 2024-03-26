@@ -8,6 +8,7 @@ from typing import Any, TextIO
 from src.context import ThreadLocalContextTable
 from src.utils.lock import Lock
 from src.utils.logging import level
+from src.utils.logging.level import LogLevelLookup
 from src.utils.logging.log_engine_client import LogEngineClient
 from src.utils.logging.stack import get_stack
 from src.utils.types import nullable, const

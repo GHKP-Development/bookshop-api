@@ -47,7 +47,7 @@ class DBConfig:
 @dataclass
 class LoggingConfig:
     log_level: int
-    stacktrace_arg_max_length: int
+    stacktrace_arg_max_length: int = 50
     log_server_host: nullable(str) = None
     log_server_port: nullable(int) = None
     log_server_bulk_limit: nullable(int) = None

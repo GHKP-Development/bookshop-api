@@ -35,7 +35,7 @@ class LogEngineClient:
 
     @property
     def is_buffered(self) -> bool:
-        return self._bulk_limit > 0
+        return self._bulk_limit and self._bulk_limit > 0
 
     def _buffer_cleaner_worker(self):
         # Must be started in a thread!

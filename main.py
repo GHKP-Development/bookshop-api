@@ -9,7 +9,7 @@ from src.utils.logging.logger import Logger
 
 def main():
     cfg = Config.from_file()
-    logger = Logger("MAIN", cfg.log_level)
+    logger = Logger.from_config("MAIN", cfg.logging)
     logger.info("Initializing database...")
     db = Database(cfg.database, logger.clone("DB"))
     product = Product(name="proba",
