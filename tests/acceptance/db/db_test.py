@@ -1,17 +1,18 @@
-import logging
 import unittest
 from decimal import Decimal
 
-from config import DBConfig, DBEngineType
+from config import DBConfig, DBEngineType, LoggingConfig
 from src.core.category import ProductCategory
 from src.core.product import Product
 from src.db.connection import Database
+from src.utils.logging import level
 from src.utils.logging.logger import Logger
 
 
 class TestDatabase(unittest.TestCase):
+
     def setUp(self):
-        self.logger = Logger(name="TEST", level=logging.DEBUG)
+        self.logger = Logger.from_config(name="TEST", cfg=LoggingConfig(log_level=level.DEBUG))
         self.db = Database(cfg=DBConfig(db_name="bookshop_tests", engine=DBEngineType.SQLITE), logger=self.logger)
 
     def test_crud_products(self):
@@ -31,14 +32,27 @@ class TestDatabase(unittest.TestCase):
             characteristics={'1': 'sample'},
             quantity=5
         )
-        self.assertTrue(self.db.insert_product(test_product))  # insert
-        self.assertEqual(test_product, self.db.get_product(product_id=test_product.id))  # get
-        test_product.name = "updated name"
-        test_product.quantity = 5
-        self.assertTrue(self.db.update_product(product=test_product))  # update
+        # insert product
+        self.assertTrue(self.db.insert_product(test_product))
+
+        # get inserted product
         self.assertEqual(test_product, self.db.get_product(product_id=test_product.id))
-        self.assertTrue(self.db.delete_product(product_id=test_product.id))  # delete
+
+        # update product
+        test_product.name = "updated name"
+        test_product.quantity = 10
+        self.assertTrue(self.db.update_product(product=test_product))
+
+        # get updated product
+        self.assertEqual(test_product, self.db.get_product(product_id=test_product.id))
+
+        # delete product
+        self.assertTrue(self.db.delete_product(product_id=test_product.id))
+
+        # get deleted product
         self.assertIsNone(self.db.get_product(product_id=test_product.id))
+
+        # fail to delete non-existent product
         self.assertFalse(self.db.delete_product(product_id=test_product.id))
 
     def test_search_products(self):

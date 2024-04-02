@@ -1,23 +1,34 @@
-import logging
 import os
 from pathlib import Path
-import datetime
-from termcolor import colored
 from typing import Any
+
+from config import LoggingConfig
+from src.utils.logging import stack
+from src.utils.logging.handler import BaseLogHandler, ConsoleHandler, FileHandler, ServerExportHandler
 
 
 class Logger:
-    """
-    Wrapper around the standard logging module with the boilerplate abstracted away.
-    """
-    def __init__(self, name: str, level: int = logging.INFO) -> None:
-        log_directory = self._log_dir()
-        log_directory.mkdir(parents=True, exist_ok=True)
-        self._level: int = level
 
-        self._setup_logger(name, level)
-        self._setup_file_handlers(log_directory, level)
-        self._setup_console_handler(level)
+    def __init__(self, name: str, lvl: int, handlers: list[BaseLogHandler]):
+
+        self._level: int = lvl
+        self._name: str = name
+        self._handlers: list[BaseLogHandler] = handlers
+
+    @classmethod
+    def from_config(cls, name: str, cfg: LoggingConfig) -> 'Logger':
+        if cfg.stacktrace_arg_max_length:
+            stack.ARG_MAX_LEN = cfg.stacktrace_arg_max_length
+        handlers: list[BaseLogHandler] = [
+            ConsoleHandler(name, cfg.log_level),
+            FileHandler(name, cfg.log_level, cls._log_dir()),
+            ServerExportHandler.new(  # TODO: Revert this to where the handler is added only if host and port are given
+                name=name, lvl=cfg.log_level,
+                host=cfg.log_server_host, port=cfg.log_server_port,
+                bulk_limit=cfg.log_server_bulk_limit, bulk_timeout_s=cfg.log_server_bulk_timeout_s,
+                schema=cfg.log_server_schema
+            )]
+        return Logger(name, cfg.log_level, handlers)
 
     @staticmethod
     def _log_dir() -> Path:
@@ -31,53 +42,25 @@ class Logger:
         Create a new logger with the same configuration as this one, but with a different name. Useful for creating
         child loggers for downstream components.
         """
-        new_logger = Logger(name, level=self._level)
-        new_logger.logger.handlers = []  # Clear existing handlers
-        new_logger._setup_file_handlers(self._log_dir(), self._level)
-        new_logger._setup_console_handler(self._level)
-        return new_logger
+        handlers = [h.clone(name) for h in self._handlers]
+        return Logger(name, lvl=self._level, handlers=handlers)
 
-    def _setup_logger(self, name: str, level: int) -> None:
-        self.logger = logging.getLogger(name)
-        if not self.logger.hasHandlers():
-            self.logger.setLevel(level)
+    def debug(self, message: Any, **tags):
+        for handler in self._handlers:
+            handler.debug(message, **tags)
 
-    def _setup_file_handlers(self, log_directory: Path, level: int) -> None:
-        date = datetime.datetime.now().strftime("%Y%m%d")
-        file_handler = self._create_file_handler(log_directory / f"{date}.log", level)
-        error_file_handler = self._create_file_handler(log_directory / f"{date}-error.log", logging.ERROR)
+    def info(self, message: Any, **tags):
+        for handler in self._handlers:
+            handler.info(message, **tags)
 
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(error_file_handler)
+    def warning(self, message: Any, **tags):
+        for handler in self._handlers:
+            handler.warning(message, **tags)
 
-    @staticmethod
-    def _format_string() -> str:
-        return "%(asctime)s [%(levelname)s] [%(name)s] - %(message)s"
+    def error(self, message: Any, traceback: bool = True, **tags):
+        for handler in self._handlers:
+            handler.error(message, traceback, **tags)
 
-    @classmethod
-    def _create_file_handler(cls, file_path: Path, level: int) -> logging.FileHandler:
-        file_handler = logging.FileHandler(file_path, encoding='utf-8')
-        file_handler.setLevel(level)
-        file_handler.setFormatter(logging.Formatter(cls._format_string()))
-        return file_handler
-
-    def _setup_console_handler(self, level: int) -> None:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(level)
-        console_handler.setFormatter(logging.Formatter(self._format_string()))
-        self.logger.addHandler(console_handler)
-
-    def debug(self, message: Any) -> None:
-        self.logger.debug(colored(str(message), "white"))
-
-    def info(self, message: Any) -> None:
-        self.logger.info(colored(str(message), "cyan"))
-
-    def success(self, message: Any) -> None:
-        self.logger.info(colored(str(message), "green"))
-
-    def warning(self, message: Any) -> None:
-        self.logger.warning(colored(str(message), "yellow"))
-
-    def error(self, message: Any) -> None:
-        self.logger.error(colored(str(message), "red"))
+    def close(self):
+        for handler in self._handlers:
+            handler.close()

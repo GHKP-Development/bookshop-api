@@ -1,33 +1,17 @@
 import json
-import logging
 from typing import Any
 from dataclasses import dataclass
 from pathlib import Path
 import os
 
+from src.utils.logging import level
+from src.utils.logging.level import LogLevelLookup
+from src.utils.types import nullable
+
 
 class DBEngineType:
     SQLITE: str = "sqlite"
     POSTGRESQL: str = "postgresql"
-
-
-class _LogLevelLookup:
-    _mapping: dict[str, int] = {
-        "DEBUG": logging.DEBUG,
-        "INFO": logging.INFO,
-        "WARNING": logging.WARNING,
-        "ERROR": logging.ERROR,
-        "CRITICAL": logging.CRITICAL,
-    }
-    _reverse_mapping: dict[int, str] = {v: k for k, v in _mapping.items()}
-
-    @classmethod
-    def lookup(cls, level: str, default: int = logging.ERROR) -> int:
-        return cls._mapping.get(level.upper(), default)
-
-    @classmethod
-    def reverse_lookup(cls, level: int, default: str = "ERROR") -> str:
-        return cls._reverse_mapping.get(level, default)
 
 
 @dataclass(repr=False)
@@ -60,12 +44,35 @@ class DBConfig:
         )
 
 
+@dataclass
+class LoggingConfig:
+    log_level: int
+    stacktrace_arg_max_length: int = 50
+    log_server_host: nullable(str) = None
+    log_server_port: nullable(int) = None
+    log_server_bulk_limit: nullable(int) = None
+    log_server_bulk_timeout_s: nullable(int) = None
+    log_server_schema: nullable(str) = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any], debug_mode: bool) -> 'LoggingConfig':
+        return cls(
+            log_level=LogLevelLookup.level_lookup(data.get("log_level"), default=level.DEBUG if debug_mode else level.ERROR),
+            stacktrace_arg_max_length=data.get("stacktrace_arg_max_length", 50),
+            log_server_host=data.get("log_server_host"),
+            log_server_port=data.get("log_server_port"),
+            log_server_bulk_limit=data.get("log_server_bulk_limit"),
+            log_server_bulk_timeout_s=data.get("log_server_bulk_timeout_s"),
+            log_server_schema=data.get("log_server_schema"),
+        )
+
+
 @dataclass(repr=False)
 class Config:
     port: int
     debug_mode: bool
-    log_level: int
     database: DBConfig
+    logging: LoggingConfig
 
     @classmethod
     def from_file(cls, path: Path = Path("config.json")) -> 'Config':
@@ -76,8 +83,6 @@ class Config:
         return cls(
             port=data.get("port", 80),
             debug_mode=debug_mode,
-            log_level=_LogLevelLookup.lookup(
-                data.get("log_level"), default=logging.DEBUG if debug_mode else logging.ERROR
-            ),
-            database=DBConfig.from_dict(data.get("database")) if data.get("database") else None
+            database=DBConfig.from_dict(data.get("database")) if data.get("database") else None,
+            logging=LoggingConfig.from_dict(data.get("logging", {}), debug_mode) if data.get("logging") else None,
         )

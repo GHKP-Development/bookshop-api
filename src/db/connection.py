@@ -32,7 +32,7 @@ class Database:
             f"Creating {self._cfg.engine} database engine with user {self._cfg.username} and database {self._cfg.db_name}")
         return create_engine(str(self._cfg))
 
-    def _instrument_postgres_db(self) -> None:
+    def _instrument_postgres_db(self):
         self._logger.debug("instrumenting postgres database")
         default_engine = create_engine(
             f'postgresql://{self._cfg.username}:{self._cfg.password}@{self._cfg.host}:{self._cfg.port}/postgres')
