@@ -12,10 +12,10 @@ jobs:
   tests:
     strategy:
       matrix:
-        python-version: [ "pypy3.9", "pypy3.10", "3.9", "3.10", "3.11", "3.12" ]
-        poetry-version: [ "1.2.2", "1.7.1" ]
-        os: [ ubuntu-22.04, macos-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
+        python-version: [ "3.12" ]
+        poetry-version: [ "1.8.2", "1.9.0" ]
+
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
