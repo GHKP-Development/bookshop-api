@@ -1,9 +1,6 @@
-name: Run Tests
+name: Acceptance Tests
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
