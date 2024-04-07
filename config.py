@@ -53,6 +53,7 @@ class LoggingConfig:
     log_server_bulk_limit: nullable(int) = None
     log_server_bulk_timeout_s: nullable(int) = None
     log_server_schema: nullable(str) = None
+    log_to_file: bool = True
 
     @classmethod
     def from_dict(cls, data: dict[str, Any], debug_mode: bool) -> 'LoggingConfig':
@@ -64,6 +65,7 @@ class LoggingConfig:
             log_server_bulk_limit=data.get("log_server_bulk_limit"),
             log_server_bulk_timeout_s=data.get("log_server_bulk_timeout_s"),
             log_server_schema=data.get("log_server_schema"),
+            log_to_file=data.get("log_to_file")
         )
 
 

@@ -12,7 +12,7 @@ from src.utils.logging.logger import Logger
 class TestDatabase(unittest.TestCase):
 
     def setUp(self):
-        self.logger = Logger.from_config(name="TEST", cfg=LoggingConfig(log_level=level.DEBUG))
+        self.logger = Logger.from_config(name="TEST", cfg=LoggingConfig(log_level=level.DEBUG, log_to_file=False))
         self.db = Database(cfg=DBConfig(db_name="bookshop_tests", engine=DBEngineType.SQLITE), logger=self.logger)
 
     def test_crud_products(self):

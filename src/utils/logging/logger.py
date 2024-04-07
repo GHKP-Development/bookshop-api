@@ -10,7 +10,6 @@ from src.utils.logging.handler import BaseLogHandler, ConsoleHandler, FileHandle
 class Logger:
 
     def __init__(self, name: str, lvl: int, handlers: list[BaseLogHandler]):
-
         self._level: int = lvl
         self._name: str = name
         self._handlers: list[BaseLogHandler] = handlers
@@ -21,13 +20,16 @@ class Logger:
             stack.ARG_MAX_LEN = cfg.stacktrace_arg_max_length
         handlers: list[BaseLogHandler] = [
             ConsoleHandler(name, cfg.log_level),
-            FileHandler(name, cfg.log_level, cls._log_dir()),
             ServerExportHandler.new(  # TODO: Revert this to where the handler is added only if host and port are given
                 name=name, lvl=cfg.log_level,
                 host=cfg.log_server_host, port=cfg.log_server_port,
                 bulk_limit=cfg.log_server_bulk_limit, bulk_timeout_s=cfg.log_server_bulk_timeout_s,
                 schema=cfg.log_server_schema
             )]
+
+        if cfg.log_to_file:
+            handlers.append(FileHandler(name, cfg.log_level, cls._log_dir()))
+
         return Logger(name, cfg.log_level, handlers)
 
     @staticmethod
