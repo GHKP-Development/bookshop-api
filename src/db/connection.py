@@ -1,4 +1,5 @@
 import contextlib
+import http
 from decimal import Decimal
 
 from sqlalchemy import Engine, create_engine, text
@@ -118,15 +119,17 @@ class Database:
             self._logger.debug(f"Could not delete product with id {product_id}\n Exception: {exc}")
         return False
 
-    def update_product(self, product: Product) -> bool:
+    def update_product(self, product: Product) -> int:
         try:
             with self.in_session() as session:
                 if existing_product := session.get_product(product.id):
-                    return session.update_product(existing_product, product)
+                    if session.update_product(existing_product, product):
+                        return http.HTTPStatus.OK
                 self._logger.debug(f"Product with ID: {product.id} does not exist")
+                return http.HTTPStatus.NOT_FOUND
         except Exception as exc:
             self._logger.debug(f"Could not update product with id {product.id}\n Exception: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
     def delete_all_products(self):
         try:

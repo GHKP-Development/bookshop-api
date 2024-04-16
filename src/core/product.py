@@ -43,3 +43,17 @@ class Product:
             characteristics=db_model.characteristics,
             quantity=db_model.quantity
         )
+
+    @classmethod
+    def from_dict(cls, request_model: dict) -> 'Product':
+        return cls(
+            id=request_model.get("id"),
+            name=request_model.get("name"),
+            category=request_model.get("category"),
+            price=request_model.get("price"),
+            description=request_model.get("description"),
+            image_path=request_model.get("image_path"),
+            producer=request_model.get("producer"),
+            characteristics=request_model.get("characteristics"),
+            quantity=request_model.get("quantity")
+        )
