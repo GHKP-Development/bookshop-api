@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Any
+from typing import Any, List, Type
 
 from sqlalchemy.orm import Session as SQLAlchemySession
 
@@ -28,7 +28,7 @@ class Session:
 
     def search_products(self, static_filters: dict[str, Any], category: int = None, min_price: Decimal = None,
                         max_price: Decimal = None
-                        ):
+                        ) -> list[ProductModel]:
         query = self._session.query(ProductModel).filter_by(**static_filters)
         if min_price is not None:
             query = query.filter(ProductModel.price >= min_price)

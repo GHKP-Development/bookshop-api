@@ -1,5 +1,8 @@
+import csv
 import http
+import zipfile
 from datetime import datetime
+from io import BytesIO
 
 from flask import Flask, Response, jsonify, request
 
@@ -18,10 +21,9 @@ class Application:
         self._logger: Logger = logger
         self._start_time: datetime = datetime.now()
 
-        self._app.add_url_rule('/products/<int:product_id>', 'product', self._handle_product, methods=['GET', 'DELETE'])
+        self._app.add_url_rule('/products/<int:product_id>', 'product', self._handle_product, methods=['GET'])
         self._app.add_url_rule('/products/search', 'search_products', self.search_products, methods=['GET'])
-        self._app.add_url_rule('/products/insert', 'insert_product', self.insert_product, methods=['POST'])
-        self._app.add_url_rule('/products/update', 'update_product', self.update_product, methods=['PUT'])
+        self._app.add_url_rule('/products/upload', 'upload_products', self.upload_products, methods=['POST'])
         self._app.add_url_rule('/health', 'health_check', self._health, methods=['GET'])
 
     def run(self, port: int = 0):
@@ -60,9 +62,20 @@ class Application:
                 return self.delete_product(product_id)
 
     def get_product(self, product_id: int = None) -> Response:
+        self._instrument_thread()
         self._logger.debug(f"Product id is: {product_id}")
         db_product = self._db.get_product(product_id)
         return jsonify(db_product)
+
+    def upload_products(self):
+        uploaded_zip = request.files['zip_file']
+        zip_file = BytesIO(uploaded_zip.read())
+
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            # Assuming the zip file contains a single CSV file
+            #  Get the name of the CSV file
+            with zip_ref.open("manifest.csv") as csv_file:
+                reader = csv.reader(csv_file)
 
     def insert_product(self):
         self._instrument_thread()
@@ -88,9 +101,6 @@ class Application:
         except Exception as exc:
             self._logger.error(f"Search products failed: {exc}")
             return json_error(http.HTTPStatus.INTERNAL_SERVER_ERROR, str(exc))
-
-    def delete_product(self, product_id: int):
-        return "", self._db.delete_product(product_id)
 
     def update_product(self):
         self._instrument_thread()
