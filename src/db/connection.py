@@ -96,28 +96,28 @@ class Database:
             self._logger.error(f"Could not search for products: {exc}")
             raise
 
-    def insert_product(self, product: Product) -> bool:
+    def insert_product(self, product: Product) -> int:
         try:
             with self.in_session() as session:
                 # update unique constraints
                 product.id = session.insert_product(product.to_db_model())
                 self._logger.debug(f"Inserted product with id {product.id}")
-                return True
+                return http.HTTPStatus.OK
         except Exception as exc:
             self._logger.error(f"Could not insert product with id {product.id}\n Exception: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
-    def delete_product(self, product_id: int) -> bool:
+    def delete_product(self, product_id: int) -> int:
         try:
             with self.in_session() as session:
                 if session.delete_product(product_id):
                     self._logger.debug(f"Product with id {product_id} deleted")
-                    return True
-                self._logger.debug(f"Failed to delete product with id {product_id}")
-                return False
+                    return http.HTTPStatus.OK
+                self._logger.debug(f"Failed to delete product with id {product_id}, probably no product with this id")
+                return http.HTTPStatus.INTERNAL_SERVER_ERROR
         except Exception as exc:
             self._logger.debug(f"Could not delete product with id {product_id}\n Exception: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
     def update_product(self, product: Product) -> int:
         try:
@@ -131,11 +131,12 @@ class Database:
             self._logger.debug(f"Could not update product with id {product.id}\n Exception: {exc}")
         return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
-    def delete_all_products(self):
+    def delete_all_products(self) -> int:
         try:
             with self.in_session() as session:
                 session.delete_all_products()
                 self._logger.debug("All products deleted")
+                return http.HTTPStatus.OK
         except Exception as exc:
             self._logger.debug(f"Could not delete all products: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR

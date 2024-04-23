@@ -14,23 +14,23 @@ def main():
     logger.info("Initializing database...")
     database = Database(cfg.database, logger.clone("DB"))
 
-    product = Product(
-        name="name name name",
-        category=ProductCategory.TOYS,
-        price=12.99,
-        description="empty description",
-        image_path="some/path/",
-        quantity=1,
-        producer="Versace  versace",
-        characteristics={"tmp": "tmp"}
-    )
-    database.insert_product(product)
-    logger.debug(f"Inserted product with id: {product.id}")
+    # product = Product(
+    #     name="name name name",
+    #     category=ProductCategory.TOYS,
+    #     price=12.99,
+    #     description="empty description",
+    #     image_path="some/path/",
+    #     quantity=1,
+    #     producer="Versace  versace",
+    #     characteristics={"tmp": "tmp"}
+    # )
+    # database.insert_product(product)
+    # logger.debug(f"Inserted product with id: {product.id}")
 
     server = Application(port=80, database=database, logger=logger.clone("WEB"))
     server.run()
 
-    server.search_products(name="proba")
+    server.search_products()
     server.get_product(product_id=26)
 
 

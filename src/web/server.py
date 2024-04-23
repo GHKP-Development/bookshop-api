@@ -20,13 +20,15 @@ class Application:
 
         self._app.add_url_rule('/products/<int:product_id>', 'product', self._handle_product, methods=['GET', 'DELETE'])
         self._app.add_url_rule('/products/search', 'search_products', self.search_products, methods=['GET'])
+        self._app.add_url_rule('/products/insert', 'insert_product', self.insert_product, methods=['POST'])
+        self._app.add_url_rule('/products/update', 'update_product', self.update_product, methods=['PUT'])
         self._app.add_url_rule('/health', 'health_check', self._health, methods=['GET'])
 
     def run(self, port: int = 0):
         """
         Run the application. If no port is specified, the port from the constructor is used. If no port is specified
         in the constructor, port 80 is used.
-        If debug is True, the application is run in debug mode (raw flask). Otherwise, the application is run in
+        If debug is True, the application is run in debug mode (raw flask). Otherwise, the application is running in
         production mode (waitress WSGI server)
         """
         if not port:
@@ -49,10 +51,23 @@ class Application:
                 source = ff
             ctx.upsert(key="source", value=source)
 
+    def _handle_product(self, product_id: int):
+        self._instrument_thread()
+        match request.method:
+            case 'GET':
+                return self.get_product(product_id)
+            case 'DELETE':
+                return self.delete_product(product_id)
+
     def get_product(self, product_id: int = None) -> Response:
         self._logger.debug(f"Product id is: {product_id}")
         db_product = self._db.get_product(product_id)
         return jsonify(db_product)
+
+    def insert_product(self):
+        self._instrument_thread()
+        product = Product.from_dict(request.get_json())
+        return "", self._db.insert_product(product)
 
     def search_products(self) -> Response:
         self._instrument_thread()
@@ -74,16 +89,8 @@ class Application:
             self._logger.error(f"Search products failed: {exc}")
             return json_error(http.HTTPStatus.INTERNAL_SERVER_ERROR, str(exc))
 
-    def delete_product(self, product_id: int) -> bool:
-        return self._db.delete_product(product_id)
-
-    def _handle_product(self, product_id: int):
-        self._instrument_thread()
-        match request.method:
-            case 'GET':
-                return self.get_product(product_id)
-            case 'DELETE':
-                return self.delete_product(product_id)
+    def delete_product(self, product_id: int):
+        return "", self._db.delete_product(product_id)
 
     def update_product(self):
         self._instrument_thread()
