@@ -12,7 +12,7 @@ class ProductModel(Base):
     category = Column("category", BigInteger)
     price = Column("price", Numeric)
     description = Column("description", String)
-    image_path = Column("image_path", String)
+    image_paths = Column("image_paths", String)
     producer = Column("producer", String)
     characteristics = Column("characteristics", JSON)
     quantity = Column("quantity", Integer)

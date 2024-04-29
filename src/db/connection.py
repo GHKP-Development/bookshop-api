@@ -1,4 +1,5 @@
 import contextlib
+import http
 from decimal import Decimal
 
 from sqlalchemy import Engine, create_engine, text
@@ -95,44 +96,47 @@ class Database:
             self._logger.error(f"Could not search for products: {exc}")
             raise
 
-    def insert_product(self, product: Product) -> bool:
+    def insert_product(self, product: Product) -> int:
         try:
             with self.in_session() as session:
                 # update unique constraints
                 product.id = session.insert_product(product.to_db_model())
                 self._logger.debug(f"Inserted product with id {product.id}")
-                return True
+                return http.HTTPStatus.OK
         except Exception as exc:
             self._logger.error(f"Could not insert product with id {product.id}\n Exception: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
-    def delete_product(self, product_id: int) -> bool:
+    def delete_product(self, *product_ids: int) -> int:
         try:
             with self.in_session() as session:
-                if session.delete_product(product_id):
-                    self._logger.debug(f"Product with id {product_id} deleted")
-                    return True
-                self._logger.debug(f"Failed to delete product with id {product_id}")
-                return False
+                if session.delete_products(*product_ids):
+                    self._logger.debug(f"Product with id {product_ids} deleted")
+                    return http.HTTPStatus.OK
+                self._logger.debug(f"Failed to delete product with id {product_ids}, probably no product with this id")
+                return http.HTTPStatus.INTERNAL_SERVER_ERROR
         except Exception as exc:
-            self._logger.debug(f"Could not delete product with id {product_id}\n Exception: {exc}")
-        return False
+            self._logger.debug(f"Could not delete product with id {product_ids}\n Exception: {exc}")
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
-    def update_product(self, product: Product) -> bool:
+    def update_product(self, product: Product) -> int:
         try:
             with self.in_session() as session:
                 if existing_product := session.get_product(product.id):
-                    return session.update_product(existing_product, product)
+                    if session.update_product(existing_product, product):
+                        return http.HTTPStatus.OK
                 self._logger.debug(f"Product with ID: {product.id} does not exist")
+                return http.HTTPStatus.NOT_FOUND
         except Exception as exc:
             self._logger.debug(f"Could not update product with id {product.id}\n Exception: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
-    def delete_all_products(self):
+    def delete_all_products(self) -> int:
         try:
             with self.in_session() as session:
                 session.delete_all_products()
                 self._logger.debug("All products deleted")
+                return http.HTTPStatus.OK
         except Exception as exc:
             self._logger.debug(f"Could not delete all products: {exc}")
-        return False
+        return http.HTTPStatus.INTERNAL_SERVER_ERROR

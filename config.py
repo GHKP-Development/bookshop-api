@@ -58,7 +58,8 @@ class LoggingConfig:
     @classmethod
     def from_dict(cls, data: dict[str, Any], debug_mode: bool) -> 'LoggingConfig':
         return cls(
-            log_level=LogLevelLookup.level_lookup(data.get("log_level"), default=level.DEBUG if debug_mode else level.ERROR),
+            log_level=LogLevelLookup.level_lookup(data.get("log_level"),
+                                                  default=level.DEBUG if debug_mode else level.ERROR),
             stacktrace_arg_max_length=data.get("stacktrace_arg_max_length", 50),
             log_server_host=data.get("log_server_host"),
             log_server_port=data.get("log_server_port"),
@@ -75,6 +76,7 @@ class Config:
     debug_mode: bool
     database: DBConfig
     logging: LoggingConfig
+    blob_storage_location: Path
 
     @classmethod
     def from_file(cls, path: Path = Path("config.json")) -> 'Config':
@@ -87,4 +89,5 @@ class Config:
             debug_mode=debug_mode,
             database=DBConfig.from_dict(data.get("database")) if data.get("database") else None,
             logging=LoggingConfig.from_dict(data.get("logging", {}), debug_mode) if data.get("logging") else None,
+            blob_storage_location=Path(data.get("blob_storage_location")).absolute()
         )

@@ -11,7 +11,7 @@ class Product:
     category: int
     price: float
     description: str
-    image_path: str
+    image_paths: list[str]
     producer: str
     characteristics: dict[str, Any]
     quantity: int
@@ -24,7 +24,7 @@ class Product:
             category=self.category,
             price=self.price,
             description=self.description,
-            image_path=self.image_path,
+            image_paths=";".join(self.image_paths),
             producer=self.producer,
             characteristics=self.characteristics,
             quantity=self.quantity
@@ -38,8 +38,22 @@ class Product:
             category=db_model.category,
             price=db_model.price,
             description=db_model.description,
-            image_path=db_model.image_path,
+            image_paths=db_model.image_path.split(";"),
             producer=db_model.producer,
             characteristics=db_model.characteristics,
             quantity=db_model.quantity
+        )
+
+    @classmethod
+    def from_dict(cls, request_model: dict) -> 'Product':
+        return cls(
+            id=request_model.get("id"),
+            name=request_model.get("name"),
+            category=request_model.get("category"),
+            price=request_model.get("price"),
+            description=request_model.get("description"),
+            image_paths=request_model.get("image_paths"),
+            producer=request_model.get("producer"),
+            characteristics=request_model.get("characteristics"),
+            quantity=request_model.get("quantity")
         )

@@ -10,3 +10,21 @@ class ProductCategory:
     NOTEBOOKS: const(int) = 32
     ARTS: const(int) = 64
     TOYS: const(int) = 128
+    _mapping: dict[str, int] = {
+        "stationery": STATIONERY,
+        "documents": DOCUMENTS,
+        "office": OFFICE,
+        "bags": BAGS,
+        "cases": CASES,
+        "notebooks": NOTEBOOKS,
+        "arts": ARTS,
+        "toys": TOYS
+    }
+    _reverse_mapping: dict[int, str] = {
+        v: k for k, v in _mapping.items()
+    }
+
+    @classmethod
+    def lookup(cls, name: str) -> int:
+        return cls._mapping[name]
+
