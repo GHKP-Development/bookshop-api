@@ -1,6 +1,8 @@
+from pathlib import Path
 from time import sleep
 
 from config import Config
+from src.blob_storage.controller import BlobStorage
 from src.core.category import ProductCategory
 from src.core.product import Product
 from src.db.connection import Database
@@ -13,6 +15,7 @@ def main():
     logger = Logger.from_config("MAIN", cfg.logging)
     logger.info("Initializing database...")
     database = Database(cfg.database, logger.clone("DB"))
+    storage = BlobStorage(cfg.blob_storage_location)
 
     # product = Product(
     #     name="name name name",
@@ -27,11 +30,13 @@ def main():
     # database.insert_product(product)
     # logger.debug(f"Inserted product with id: {product.id}")
 
-    server = Application(port=80, database=database, logger=logger.clone("WEB"))
+    database.delete_product(31, 32, 33)
+
+    server = Application(port=80, database=database, blob_storage=storage, logger=logger.clone("WEB"))
     server.run()
 
-    server.search_products()
-    server.get_product(product_id=26)
+    # server.search_products()
+    # server.get_product(product_id=26)
 
 
 if __name__ == "__main__":

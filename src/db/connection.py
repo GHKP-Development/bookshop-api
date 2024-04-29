@@ -107,16 +107,16 @@ class Database:
             self._logger.error(f"Could not insert product with id {product.id}\n Exception: {exc}")
         return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
-    def delete_product(self, product_id: int) -> int:
+    def delete_product(self, *product_ids: int) -> int:
         try:
             with self.in_session() as session:
-                if session.delete_product(product_id):
-                    self._logger.debug(f"Product with id {product_id} deleted")
+                if session.delete_products(*product_ids):
+                    self._logger.debug(f"Product with id {product_ids} deleted")
                     return http.HTTPStatus.OK
-                self._logger.debug(f"Failed to delete product with id {product_id}, probably no product with this id")
+                self._logger.debug(f"Failed to delete product with id {product_ids}, probably no product with this id")
                 return http.HTTPStatus.INTERNAL_SERVER_ERROR
         except Exception as exc:
-            self._logger.debug(f"Could not delete product with id {product_id}\n Exception: {exc}")
+            self._logger.debug(f"Could not delete product with id {product_ids}\n Exception: {exc}")
         return http.HTTPStatus.INTERNAL_SERVER_ERROR
 
     def update_product(self, product: Product) -> int:

@@ -21,7 +21,7 @@ class ProductCategory:
         "toys": TOYS
     }
     _reverse_mapping: dict[int, str] = {
-        v: k for k, v in _mapping
+        v: k for k, v in _mapping.items()
     }
 
     @classmethod

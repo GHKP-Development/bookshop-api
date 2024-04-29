@@ -16,8 +16,8 @@ from src.utils.types import nullable, const
 
 def _string_format(lvl: int, logger_name: str, message: str, **tags) -> str:
     ts = dt.now().isoformat("T")
-    t = ', '.join(f'{k}={v}' for k, v in tags.items()) if tags else ''
-    return f"[{ts}][{level.LogLevelLookup.label_lookup(lvl)}][{logger_name}] {message} ({t})"
+    t = " (" + ', '.join(f'{k}={v}' for k, v in tags.items()) + ")" if tags else ''
+    return f"[{ts}][{level.LogLevelLookup.label_lookup(lvl)}][{logger_name}] {message}{t}"
 
 
 class BaseLogHandler(metaclass=ABCMeta):
@@ -215,7 +215,7 @@ class ServerExportHandler(BaseLogHandler):
             "source": tags.pop("source"),
             "tags": tags
         }
-        print(json.dumps(data))  # TODO: Remove this line after debug
+        # print(json.dumps(data))  # TODO: Remove this line after debug
         return data
 
     def _send(self, data: dict[str, Any]):
